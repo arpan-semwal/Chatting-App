@@ -5,6 +5,10 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.1",
     "mongoose": "^7.4.3",
+    "proxy": "http://localhost:4000"
+
+  },
+  "devDependencies": {
     "nodemon": "^3.0.1"
   }
 }

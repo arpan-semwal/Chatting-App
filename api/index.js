@@ -19,9 +19,6 @@ app.use(cors({
 app.use(express.json());
 
 
-
-
-
 app.get('/test' , (req , res) => {
     res.json("It works ok");
     console.log("Server starts at port 4000");
@@ -36,7 +33,9 @@ app.post('/register' , async(req ,res) => {
         jwt.sign({ userId: createdUser._id }, jwtSecret, {}, (err , token) => {
             // Generates a JSON Web Token (JWT) using the jwt.sign method from the jsonwebtoken library. The token is signed with the user's _id (usually representing the user's unique identifier in the database) and a secret key (jwtSecret). The callback function receives an error (err) and the generated token (token).
             if(err) throw err;
-            res.cookie('token' , token).status(201).json('ok');
+            res.cookie('token' , token).status(201).json({
+                id:createdUser._id,
+            });
         });
     }
     catch(err){
