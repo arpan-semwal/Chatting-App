@@ -6,8 +6,10 @@ import { UserContext } from "../Context/UserContext";
 export default function Routes(){
     const {username} = useContext(UserContext);
     
+    
+
     if(username){
-        return "Logged in";
+        return "Logged in!" + username;
     }
     return(
         <Register/>
