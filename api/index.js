@@ -9,6 +9,7 @@ mongoose.connect(process.env.MONGO_URL );
 const jwtSecret = process.env. JWT_SECRET;
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
+const ws = require('ws');
 
 const app = express();
 app.use(cors({
@@ -85,6 +86,31 @@ app.post("/login" , async(req, res) => {
 }) 
 
 
-app.listen(4000, () => {
+const server = app.listen(4000, () => {//web socket server
     console.log("Server starts at port 4000");
+});
+
+
+const wss = new ws.WebSocketServer({server});
+//we are taking the cookie from the headers adn we are spliting it if we are having more than one cookie and we are stroing that cookei tahth starts with token=
+
+wss.on('connection' , (connection , req) => {
+    const cookies = req.headers.cookie;
+    if(cookies){
+     const tokenCookieString = cookies.split(";").find(str => str.startsWith('token='));
+     if(tokenCookieString){
+        const token = tokenCookieString.split("=")[1];
+        if(token){
+            jwt.verify(token , jwtSecret , {} , (err , userData) => {
+                if(err) throw err;
+                const {userId , username} = userData;
+                connection.userId = userId
+                connection.username = username;
+            })
+        }
+     }
+    }
+
+    console.log([...wss.clients].map(c => c.username));//making it arrat
+        
 });

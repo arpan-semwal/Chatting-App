@@ -1,6 +1,7 @@
 import Register from "./Register"
 import { useContext } from "react";
 import { UserContext } from "../Context/UserContext";
+import Chat from "../components/Chat";
 
 
 export default function Routes(){
@@ -9,7 +10,7 @@ export default function Routes(){
     
 
     if(username){
-        return "Logged in!" + username;
+        return <Chat/>
     }
     return(
         <Register/>
