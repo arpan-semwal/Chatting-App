@@ -27,6 +27,9 @@ app.get('/test' , (req , res) => { // to check wether the server is working
     console.log("Server starts at port 4000");
 });
 
+
+
+
 app.get('/profile' , (req , res) => {
     const token = req.cookies?.token;
     if (token){
@@ -115,6 +118,17 @@ wss.on('connection' , (connection , req) => {
         client.send(JSON.stringify({
         online:[...wss.clients].map(c =>({userId:c.userId , username:c.username}))
     }))
+    });
+
+
+    connection.on('message' , (message) => {
+       const messageData = JSON.parse(message.toString());
+       const {recipient , text} = messageData;
+       if(recipient && text){
+        [...wss.clients]
+        .filter(c => c.userId === recipient)
+        .forEach(c => c.send(JSON.stringify({text , sender:connection.userId})));
+       }
     })
 
    
