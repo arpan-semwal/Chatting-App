@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react"
 import Avatar from "./Avatar";
 import Logo from "./Logo";
+// import {uniqBy} from 'lodash';
 import { UserContext } from "../Context/UserContext";
 
 const Chat = () => {
@@ -10,6 +11,8 @@ const Chat = () => {
     const [newMessgaeText , setNewMessageText] = useState('');
     const { id} = useContext(UserContext);
     const [messages , setMessages] = useState([]);
+
+
     useEffect(() => {
         const ws = new WebSocket('ws://localhost:4000');
         setWs(ws);
@@ -25,7 +28,7 @@ const Chat = () => {
     }
 
 
-
+    //receives messages
     function handleMessage(ev){
         const messageData = JSON.parse(ev.data);
         console.log({ev , messageData});
@@ -33,8 +36,8 @@ const Chat = () => {
         if('online' in messageData){
             showOnlinePeople(messageData.online);
         }
-        else{
-          setMessages(prev => ([...prev , {isOur:false , text:messageData.text}]));
+        else if('text' in messageData){
+          setMessages(prev => ([...prev , {...messageData.text}]));
         }
       
     }
@@ -43,6 +46,8 @@ const Chat = () => {
     const onlinePeopleExcudingOurUser = {...onlinePeople};
     delete onlinePeopleExcudingOurUser[id];
    
+
+    //send messgage
     function sendMessage(ev){
       ev.preventDefault();
       ws.send(JSON.stringify({
@@ -52,9 +57,17 @@ const Chat = () => {
       
       }));
       setNewMessageText('');
-      setMessages(prev => ([...prev , {text : newMessgaeText , isOur:true}]));
+      setMessages(prev => ([...prev , 
+        {
+         text : newMessgaeText ,
+         sender: id,
+         recipient: selectedUserId
+        
+        
+        }]));
     }
     
+    // const  messageWithoutDupes = uniqBy(messages , 'id');
 
 
     
@@ -75,12 +88,16 @@ const Chat = () => {
        <div className="w-1 bg-blue-500 h-12 rounded-r-md"></div>
     )}
 
+
+
         <div className="flex gap-2 py-2 pl-4 items-center">
             <Avatar username={onlinePeople[userId]} userId={userId} />
             <span className="text-gray-800">{onlinePeople[userId]}</span>
         </div>
       
     </div>
+
+
   ))}
 </div>
 
@@ -94,14 +111,20 @@ const Chat = () => {
               
             </div>
            )}
-           {!!selectedUserId && (
-            <div>
-              {messages.map(message => (
-                // eslint-disable-next-line react/jsx-key
-                <div>{message.text}</div>
-              ))}
-            </div>
-           )}
+         {!!selectedUserId && (
+  <div>
+    {messages.map(message => (
+      // eslint-disable-next-line react/jsx-key
+      // eslint-disable-next-line react/jsx-key
+      <div className={" " +(message.sender === id ? 'bg-blue-500 text-white ': 'bg-white text-gray-500')}>
+        sender:{message.sender}<br/>
+        my id: {id}<br/>
+        {message.text}
+      </div>
+    ))}
+  </div>
+)}
+
         </div>
 
 
@@ -120,10 +143,6 @@ const Chat = () => {
                    </button>
            </form>
           )}
-       
-
-
-
       </div>
     </div>
   )
