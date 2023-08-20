@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react"
 import Avatar from "./Avatar";
 import Logo from "./Logo";
-// import {uniqBy} from 'lodash';
+import {uniqBy} from 'lodash';
 import { UserContext } from "../Context/UserContext";
 
 const Chat = () => {
@@ -67,7 +67,7 @@ const Chat = () => {
         }]));
     }
     
-    // const  messageWithoutDupes = uniqBy(messages , 'id');
+    const  messageWithoutDupes = uniqBy(messages , 'id');
 
 
     
@@ -111,20 +111,20 @@ const Chat = () => {
               
             </div>
            )}
-         {!!selectedUserId && (
-  <div>
-    {messages.map(message => (
-      // eslint-disable-next-line react/jsx-key
-      // eslint-disable-next-line react/jsx-key
-      <div className={" " +(message.sender === id ? 'bg-blue-500 text-white ': 'bg-white text-gray-500')}>
-        sender:{message.sender}<br/>
-        my id: {id}<br/>
-        {message.text}
-      </div>
-    ))}
-  </div>
-)}
-
+           {!!selectedUserId && (
+            <div>
+              {messageWithoutDupes.map(message => (
+                // eslint-disable-next-line react/jsx-key
+              
+                // eslint-disable-next-line react/jsx-key
+                <div className={" " +(message.sender === id ? 'bg-blue-500 text-white ': 'bg-white text-gray-500')}>
+                  sender:{message.sender}<br/>
+                  my id: {id}<br/>
+                {message.text}
+                </div>
+              ))}
+            </div>
+           )}
         </div>
 
 
