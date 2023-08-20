@@ -8,7 +8,7 @@ const Chat = () => {
     const [ws ,setWs] = useState(null);
     const [onlinePeople , setOnlinePeople] = useState([]);
     const [selectedUserId , setSelectedUserId] = useState(null);
-    const [newMessgaeText , setNewMessageText] = useState('');
+    const [newMessageText , setNewMessageText] = useState('');
     const { id} = useContext(UserContext);
     const [messages , setMessages] = useState([]);
 
@@ -53,13 +53,13 @@ const Chat = () => {
       ws.send(JSON.stringify({
       
           recipient:selectedUserId,
-          text:newMessgaeText,
+          text:newMessageText,
       
       }));
       setNewMessageText('');
       setMessages(prev => ([...prev , 
         {
-         text : newMessgaeText ,
+         text : newMessageText ,
          sender: id,
          recipient: selectedUserId
         
@@ -132,7 +132,7 @@ const Chat = () => {
           {!!selectedUserId && (
                <form className="flex gap-2" onSubmit={sendMessage}>
                <input type="text" 
-               value={newMessgaeText}
+               value={newMessageText}
                onChange={ev => setNewMessageText(ev.target.value)}
                    placeholder="Type Your message"  
                    className="bg-white flex-grow border p-2 rounded-sm"/>
