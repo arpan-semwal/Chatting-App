@@ -30,18 +30,18 @@ const Chat = () => {
 
     //receives messages
     function handleMessage(ev){
-        const messageData = JSON.parse(ev.data);
-        console.log({ev , messageData});
-        
-        if('online' in messageData){
-            showOnlinePeople(messageData.online);
-        }
-        else if('text' in messageData){
-          setMessages(prev => ([...prev , {...messageData.text}]));
-        }
-      
-    }
+      const messageData = JSON.parse(ev.data);
+      console.log({ev,messageData});
 
+      if('online' in messageData){
+        showOnlinePeople(messageData.online);
+      }else if('text' in messageData){
+        setMessages(prev => ([...prev , {...messageData}]));
+      }
+
+    }
+  
+  
 
     const onlinePeopleExcudingOurUser = {...onlinePeople};
     delete onlinePeopleExcudingOurUser[id];
@@ -50,24 +50,28 @@ const Chat = () => {
     //send messgage
     function sendMessage(ev){
       ev.preventDefault();
+      const timestamp = Date.now(); // Generate a unique timestamp
       ws.send(JSON.stringify({
-      
-          recipient:selectedUserId,
-          text:newMessageText,
-      
+          recipient: selectedUserId,
+          text: newMessageText,
+          timestamp: timestamp, // Include the timestamp in the message
       }));
-      setNewMessageText('');
-      setMessages(prev => ([...prev , 
+    
+      setMessages(prev => ([
+        ...prev, 
         {
-         text : newMessageText ,
-         sender: id,
-         recipient: selectedUserId
-        
-        
-        }]));
+          text: newMessageText,
+          sender: id,
+          recipient: selectedUserId,
+          id: Date.now(), 
+        }
+      ]));
+      
+      setNewMessageText('');
     }
     
-    const  messageWithoutDupes = uniqBy(messages , 'id');
+    
+    const messageWithoutDupes = uniqBy(messages, 'id');
 
 
     
@@ -114,15 +118,16 @@ const Chat = () => {
            {!!selectedUserId && (
             <div>
               {messageWithoutDupes.map(message => (
-                // eslint-disable-next-line react/jsx-key
-              
-                // eslint-disable-next-line react/jsx-key
-                <div className={" " +(message.sender === id ? 'bg-blue-500 text-white ': 'bg-white text-gray-500')}>
-                  sender:{message.sender}<br/>
-                  my id: {id}<br/>
-                {message.text}
-                </div>
-              ))}
+  // eslint-disable-next-line react/jsx-key
+  <div className={(message.sender === id ? 'text-left' : 'text-right')}>
+    <div className={(message.sender === id ? 'bg-blue-500 text-white' : 'bg-white text-gray-500') + ' inline-block p-2 my-2 rounded-md text-sm'}>
+      sender: {message.sender}<br />
+      my id: {id}<br />
+      {message.text}
+    </div>
+  </div>
+))}
+
             </div>
            )}
         </div>
