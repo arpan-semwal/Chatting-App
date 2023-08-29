@@ -1,9 +1,10 @@
 import { useContext, useEffect, useState , useRef } from "react"
-import Avatar from "./Avatar";
+
 import Logo from "./Logo";
 import {uniqBy} from 'lodash';
 import { UserContext } from "../Context/UserContext";
 import axios from "axios";
+import Person from "./Person";
 
 const Chat = () => {
     const [ws ,setWs] = useState(null);
@@ -12,6 +13,7 @@ const Chat = () => {
     const [newMessageText , setNewMessageText] = useState('');
     const { id} = useContext(UserContext);
     const [messages , setMessages] = useState([]);
+    const [offlinePeople , setOfflinePeople] = useState({});
     const divUnderMessages = useRef();
 
     useEffect(() => {
@@ -30,8 +32,11 @@ const Chat = () => {
         } , 1000)
       })
     }
-    
 
+
+
+    
+// Showing online people
     function showOnlinePeople(peopleArray){
        const people = {};
        peopleArray.forEach(({userId , username}) => {
@@ -58,11 +63,11 @@ const Chat = () => {
     //send messgage
     function sendMessage(ev){
       ev.preventDefault();
-       // Generate a unique timestamp
+       
       ws.send(JSON.stringify({
           recipient: selectedUserId,
           text: newMessageText,
-          _id:Date.now(), // Include the timestamp in the message
+          _id:Date.now(), 
       }));
     
       setMessages(prev => ([
@@ -79,6 +84,20 @@ const Chat = () => {
       ]));
      setNewMessageText('');
     }
+
+    useEffect(() => {
+      axios.get("/people").then(res => {
+        const offlinePeopleArr = res.data
+        .filter(p => p._id !== id)
+        .filter(p => !Object.keys(onlinePeople).includes(p._id));
+        const offlinePeople = {};
+        offlinePeopleArr.forEach(p => {
+          offlinePeople[p._id] = p;
+        });
+        
+        setOfflinePeople(offlinePeople);
+      })
+    } , [onlinePeople])
 
     useEffect(() => {
       if(selectedUserId){
@@ -99,38 +118,41 @@ const Chat = () => {
   return (
 
 
-    <div className="flex h-screen">
+    <div className="flex h-screen"> 
 
-
+    {/* Divide the screen into two margins left for online people and right for chat */}
 
       
       {/* left margin */}
         <div className="bg-blue-100 w-1/3 ">
          <Logo/>
-      {Object.keys(onlinePeopleExcudingOurUser).map(userId => (
-          <div
-               onClick={() => setSelectedUserId(userId)}
-               className={
-               "border-b border-gray-100 py-2 pl-4 flex items-center gap-2 cursor-pointer" +
-               (userId === selectedUserId ? ' bg-blue-200' : '') // Add background color class
-               }
-              key={userId}
-          >
-          {userId === selectedUserId && (
-          <div className="w-1 bg-blue-500 h-12 rounded-r-md"></div>
-    )}
+         {Object.keys(onlinePeopleExcudingOurUser).map(userId => (
+          
+          <Person
+          key={userId}
+          id={userId}
+          online={true}
+          username = {onlinePeopleExcudingOurUser[userId]}
+          onClick={() => setSelectedUserId(userId)}
+          selected = {userId === selectedUserId}/>
+         ))}
 
+      {Object.keys(offlinePeople).map(userId => (
+          
+          <Person
+          key={userId} 
+          id={userId}
+          online={false}
+          username = {offlinePeople[userId].username}
+          onClick={() => setSelectedUserId(userId)}
+          selected = {userId === selectedUserId}
 
-
-        <div className="flex gap-2 py-2 pl-4 items-center">
-            <Avatar username={onlinePeople[userId]} userId={userId} />
-            <span className="text-gray-800">{onlinePeople[userId]}</span>
-        </div>
-      
-    </div>
+          />
 
 
   ))}
+
+  
 </div>
 
 
@@ -138,6 +160,8 @@ const Chat = () => {
 
 
 {/* right margin */}
+
+
       <div className="flex flex-col h-full bg-blue-300 w-2/3 p-2 overflow-y-auto">
 
         <div className="flex grow">
@@ -179,11 +203,6 @@ const Chat = () => {
 
 </div>
 
-
-
-
-
-
   {!!selectedUserId && (
     <form className="flex   gap-2" onSubmit={sendMessage}>
                <input type="text" 
@@ -200,9 +219,6 @@ const Chat = () => {
           )}
       </div>
     </div>
-    
-    
-    
   )
 }
 

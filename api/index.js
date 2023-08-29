@@ -11,6 +11,7 @@ const jwtSecret = process.env. JWT_SECRET;
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const ws = require('ws');
+const UserModel = require("./models/User");
 
 const app = express();
 app.use(cors({
@@ -43,6 +44,12 @@ function getUserDataFromRequest(req){
     })
     
 }
+
+
+app.get("/people" , async(req , res) => {
+    const users = await User.find({} , {'_id':1 , username:1});
+    res.json(users);
+})
 
 
 app.get('/messages/:userId' , async(req,res) => {
@@ -131,6 +138,24 @@ const wss = new ws.WebSocketServer({server});
 //we are taking the cookie from the headers adn we are spliting it if we are having more than one cookie and we are stroing that cookei tahth starts with token=
 
 wss.on('connection' , (connection , req) => {
+
+    connection.isAlive = true;
+
+    connection.timer = setInterval(() => {
+        connection.ping();
+        connection.deathTimer = setTimeout(() => {
+            connection.isAlive = false;
+            console.log('dead');
+        } , 1000)
+    } , 5000);
+
+    connection.on('pong' , () => {
+        clearTimeout(connection.deathTimer);
+    })
+
+
+
+
     const cookies = req.headers.cookie;
     if(cookies){
      const tokenCookieString = cookies.split(";").find(str => str.startsWith('token='));
@@ -179,3 +204,7 @@ wss.on('connection' , (connection , req) => {
    
         
 });
+
+wss.on('close' , () => {
+    console.log('disconnect' , data);
+})
