@@ -14,14 +14,22 @@ const Chat = () => {
     const [messages , setMessages] = useState([]);
     const divUnderMessages = useRef();
 
-
     useEffect(() => {
-        const ws = new WebSocket('ws://localhost:4000');
-        setWs(ws);
-        ws.addEventListener('message' , handleMessage);
-
-        ws.addEventListener('close' , () => console.log('closed'));
+      connectToWs();
     } , []);
+
+
+    function connectToWs(){
+      const ws = new WebSocket('ws://localhost:4000');
+      setWs(ws);
+      ws.addEventListener('message' , handleMessage);
+      ws.addEventListener('close' , () => {
+        setTimeout(() => {
+          console.log('Disconnected . Trying to reconnect.'),
+          connectToWs();
+        } , 1000)
+      })
+    }
     
 
     function showOnlinePeople(peopleArray){
@@ -74,7 +82,9 @@ const Chat = () => {
 
     useEffect(() => {
       if(selectedUserId){
-         axios.get('/messages/' + selectedUserId).then()
+         axios.get('/messages/' + selectedUserId).then(res => {
+          setMessages(res.data);
+         })
       }
     } , [selectedUserId]);
 
@@ -82,7 +92,7 @@ const Chat = () => {
     delete onlinePeopleExcudingOurUser[id];
     
     
-    const messageWithoutDupes = uniqBy(messages, 'id');
+    const messageWithoutDupes = uniqBy(messages, '_id');
 
 
     
@@ -90,7 +100,11 @@ const Chat = () => {
 
 
     <div className="flex h-screen">
+
+
+
       
+      {/* left margin */}
         <div className="bg-blue-100 w-1/3 ">
          <Logo/>
       {Object.keys(onlinePeopleExcudingOurUser).map(userId => (
@@ -117,11 +131,15 @@ const Chat = () => {
 
 
   ))}
-    </div>
+</div>
 
 
 
-      <div className="flex flex-col bg-blue-300 w-2/3 p-2">
+
+
+{/* right margin */}
+      <div className="flex flex-col h-full bg-blue-300 w-2/3 p-2 overflow-y-auto">
+
         <div className="flex grow">
            {!selectedUserId && (
             <div className="flex h-full flex-grow items-center justify-center">
@@ -134,7 +152,7 @@ const Chat = () => {
 
             {!!selectedUserId && (
   
-            <div className="flex-grow ">
+            <div className="flex-grow">
                  {messageWithoutDupes.map((message, index) => (
                 <div
                   key={index} // Make sure to provide a unique key for each element in the array
@@ -147,25 +165,27 @@ const Chat = () => {
                  : 'bg-white text-gray-500'
              }`}
         >
-          sender: {message.sender}
-          <br />
-          my id: {id}
-          <br />
+        
           {message.text}
         </div>
-      </div>
+        </div>
+      
     ))}
     <div className="h-12" ref={divUnderMessages}></div>
+    
   </div>
 )}
 
 
+</div>
 
 
 
 
-          {!!selectedUserId && (
-               <form className="flex gap-2" onSubmit={sendMessage}>
+
+
+  {!!selectedUserId && (
+    <form className="flex   gap-2" onSubmit={sendMessage}>
                <input type="text" 
                value={newMessageText}
                onChange={ev => setNewMessageText(ev.target.value)}
@@ -180,7 +200,8 @@ const Chat = () => {
           )}
       </div>
     </div>
-    </div>
+    
+    
     
   )
 }
