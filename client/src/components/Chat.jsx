@@ -58,11 +58,11 @@ const Chat = () => {
     //send messgage
     function sendMessage(ev){
       ev.preventDefault();
-      const timestamp = Date.now(); // Generate a unique timestamp
+       // Generate a unique timestamp
       ws.send(JSON.stringify({
           recipient: selectedUserId,
           text: newMessageText,
-          timestamp: timestamp, // Include the timestamp in the message
+          _id:Date.now(), // Include the timestamp in the message
       }));
     
       setMessages(prev => ([
@@ -71,7 +71,7 @@ const Chat = () => {
           text: newMessageText,
           sender: id,
           recipient: selectedUserId,
-          id: Date.now(), 
+          _id: Date.now(), 
         }
 
         
