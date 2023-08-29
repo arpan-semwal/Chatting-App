@@ -28,6 +28,38 @@ app.get('/test' , (req , res) => { // to check wether the server is working
     console.log("Server starts at port 4000");
 });
 
+function getUserDataFromRequest(req){
+    return new Promise((resolve , reject) => {
+        const token = req.cookies?.token;
+    if (token){
+        jwt.verify(token , jwtSecret , {} , (err , userData) => {
+            if (err) throw err;
+            const {id , username} = userData;
+            resolve(userData);
+        });
+    } else{
+        reject('no token');
+    }
+    })
+    
+}
+
+
+app.get('/messages/:userId' , async(req,res) => {
+    const {userId} = req.params;
+    const userData = await getUserDataFromRequest(req);
+    const ourUserId = userData.userId;
+    
+    const messages = await Message.find({
+       sender: {$in:[userId ,ourUserId]},
+       recipient:{$in:[userId , ourUserId]},
+    }).sort({createdAt:-1}).exec();
+
+    res.json(messages);
+
+})
+
+
 
 
 
@@ -115,6 +147,7 @@ wss.on('connection' , (connection , req) => {
      }
     }
 
+    //notify everyone about online people 
     [...wss.clients].forEach(client => {
         client.send(JSON.stringify({
         online:[...wss.clients].map(c =>({userId:c.userId , username:c.username}))

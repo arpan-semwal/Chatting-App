@@ -1,8 +1,9 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState , useRef } from "react"
 import Avatar from "./Avatar";
 import Logo from "./Logo";
 import {uniqBy} from 'lodash';
 import { UserContext } from "../Context/UserContext";
+import axios from "axios";
 
 const Chat = () => {
     const [ws ,setWs] = useState(null);
@@ -11,13 +12,17 @@ const Chat = () => {
     const [newMessageText , setNewMessageText] = useState('');
     const { id} = useContext(UserContext);
     const [messages , setMessages] = useState([]);
+    const divUnderMessages = useRef();
 
 
     useEffect(() => {
         const ws = new WebSocket('ws://localhost:4000');
         setWs(ws);
-        ws.addEventListener('message' , handleMessage)
+        ws.addEventListener('message' , handleMessage);
+
+        ws.addEventListener('close' , () => console.log('closed'));
     } , []);
+    
 
     function showOnlinePeople(peopleArray){
        const people = {};
@@ -40,12 +45,7 @@ const Chat = () => {
       }
 
     }
-  
-  
 
-    const onlinePeopleExcudingOurUser = {...onlinePeople};
-    delete onlinePeopleExcudingOurUser[id];
-   
 
     //send messgage
     function sendMessage(ev){
@@ -65,10 +65,21 @@ const Chat = () => {
           recipient: selectedUserId,
           id: Date.now(), 
         }
+
+        
+
       ]));
-      
-      setNewMessageText('');
+     setNewMessageText('');
     }
+
+    useEffect(() => {
+      if(selectedUserId){
+         axios.get('/messages/' + selectedUserId).then()
+      }
+    } , [selectedUserId]);
+
+    const onlinePeopleExcudingOurUser = {...onlinePeople};
+    delete onlinePeopleExcudingOurUser[id];
     
     
     const messageWithoutDupes = uniqBy(messages, 'id');
@@ -76,20 +87,23 @@ const Chat = () => {
 
     
   return (
+
+
     <div className="flex h-screen">
+      
         <div className="bg-blue-100 w-1/3 ">
          <Logo/>
       {Object.keys(onlinePeopleExcudingOurUser).map(userId => (
           <div
-         onClick={() => setSelectedUserId(userId)}
-         className={
-         "border-b border-gray-100 py-2 pl-4 flex items-center gap-2 cursor-pointer" +
-         (userId === selectedUserId ? ' bg-blue-200' : '') // Add background color class
-      }
-      key={userId}
-    >
-      {userId === selectedUserId && (
-       <div className="w-1 bg-blue-500 h-12 rounded-r-md"></div>
+               onClick={() => setSelectedUserId(userId)}
+               className={
+               "border-b border-gray-100 py-2 pl-4 flex items-center gap-2 cursor-pointer" +
+               (userId === selectedUserId ? ' bg-blue-200' : '') // Add background color class
+               }
+              key={userId}
+          >
+          {userId === selectedUserId && (
+          <div className="w-1 bg-blue-500 h-12 rounded-r-md"></div>
     )}
 
 
@@ -103,7 +117,7 @@ const Chat = () => {
 
 
   ))}
-</div>
+    </div>
 
 
 
@@ -115,23 +129,39 @@ const Chat = () => {
               
             </div>
            )}
-           {!!selectedUserId && (
-            <div className="">
-              {messageWithoutDupes.map(message => (
-    // eslint-disable-next-line react/jsx-key
-    <div className={(message.sender === id ? 'text-right' : 'text-left')}>
-      <div className={"text-left inline-block p-2 my-2 rounded-sm text-sm" + (message.sender === id ? 'bg-blue-500 text-white' : 'bg-white text-gray-500')}>
-      sender: {message.sender}<br />
-      my id: {id}<br />
-      {message.text}
-    </div>
-    </div>
-    
-))}
 
-            </div>
-           )}
+
+
+            {!!selectedUserId && (
+  
+            <div className="flex-grow ">
+                 {messageWithoutDupes.map((message, index) => (
+                <div
+                  key={index} // Make sure to provide a unique key for each element in the array
+                     className={message.sender === id ? 'text-left' : 'text-right'}
+                >
+              <div
+               className={`text-left inline-block p-2 my-2 rounded-sm text-sm ${
+               message.sender === id
+                  ? 'bg-blue-500 text-white'
+                 : 'bg-white text-gray-500'
+             }`}
+        >
+          sender: {message.sender}
+          <br />
+          my id: {id}
+          <br />
+          {message.text}
         </div>
+      </div>
+    ))}
+    <div className="h-12" ref={divUnderMessages}></div>
+  </div>
+)}
+</div>
+
+
+
 
 
 
@@ -151,6 +181,8 @@ const Chat = () => {
           )}
       </div>
     </div>
+    
+    
   )
 }
 
