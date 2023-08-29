@@ -116,16 +116,17 @@ const Chat = () => {
             </div>
            )}
            {!!selectedUserId && (
-            <div>
+            <div className="">
               {messageWithoutDupes.map(message => (
-  // eslint-disable-next-line react/jsx-key
-  <div className={(message.sender === id ? 'text-left' : 'text-right')}>
-    <div className={(message.sender === id ? 'bg-blue-500 text-white' : 'bg-white text-gray-500') + ' inline-block p-2 my-2 rounded-md text-sm'}>
+    // eslint-disable-next-line react/jsx-key
+    <div className={(message.sender === id ? 'text-right' : 'text-left')}>
+      <div className={"text-left inline-block p-2 my-2 rounded-sm text-sm" + (message.sender === id ? 'bg-blue-500 text-white' : 'bg-white text-gray-500')}>
       sender: {message.sender}<br />
       my id: {id}<br />
       {message.text}
     </div>
-  </div>
+    </div>
+    
 ))}
 
             </div>
