@@ -121,8 +121,8 @@ const Chat = () => {
 
 
 
-      <div className="flex flex-col bg-blue-300 w-2/3 p-2">
-        <div className="flex grow">
+      <div className="flex flex-col bg-blue-300 w-2/3">
+        <div className="flex grow overflow-auto">
            {!selectedUserId && (
             <div className="flex h-full flex-grow items-center justify-center">
               <div className="text-gray-500">&larr;Select a person from the sidebar</div>
@@ -134,7 +134,7 @@ const Chat = () => {
 
             {!!selectedUserId && (
   
-            <div className="flex-grow ">
+            <div className="flex-grow overflow-y-scroll">
                  {messageWithoutDupes.map((message, index) => (
                 <div
                   key={index} // Make sure to provide a unique key for each element in the array
@@ -166,7 +166,7 @@ const Chat = () => {
 
 
           {!!selectedUserId && (
-               <form className="flex gap-2" onSubmit={sendMessage}>
+               <form className="flex items-center  bg-white" onSubmit={sendMessage}>
                <input type="text" 
                value={newMessageText}
                onChange={ev => setNewMessageText(ev.target.value)}
