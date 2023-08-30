@@ -7,8 +7,8 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.1",
     "mongoose": "^7.4.3",
-    "ws": "^8.13.0",
-    "proxy":"http://localhost/4000"
+    "ws": "^8.13.0"
+    
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
