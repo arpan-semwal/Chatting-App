@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 import { useContext, useEffect, useState , useRef } from "react"
 
 import Logo from "./Logo";
@@ -11,7 +12,7 @@ const Chat = () => {
     const [onlinePeople , setOnlinePeople] = useState([]);
     const [selectedUserId , setSelectedUserId] = useState(null);
     const [newMessageText , setNewMessageText] = useState('');
-    const { id} = useContext(UserContext);
+    const { username ,id , setId , setUsername} = useContext(UserContext);
     const [messages , setMessages] = useState([]);
     const [offlinePeople , setOfflinePeople] = useState({});
     const divUnderMessages = useRef();
@@ -31,6 +32,14 @@ const Chat = () => {
           connectToWs();
         } , 1000)
       })
+    }
+
+    function logOut(){
+      axios.post('/logout').then(() => {
+        setId(null);
+        setUsername(null);
+        setWs(null);
+      });
     }
 
 
@@ -124,8 +133,11 @@ const Chat = () => {
 
       
       {/* left margin */}
-        <div className="bg-blue-100 w-1/3 ">
+        <div className="bg-blue-100 w-1/3 flex flex-col ">
+        <div className="flex-grow">
          <Logo/>
+
+         
          {Object.keys(onlinePeopleExcudingOurUser).map(userId => (
           
           <Person
@@ -145,14 +157,21 @@ const Chat = () => {
           online={false}
           username = {offlinePeople[userId].username}
           onClick={() => setSelectedUserId(userId)}
-          selected = {userId === selectedUserId}
-
-          />
-
-
+          selected = {userId === selectedUserId}/>
   ))}
+ 
+    </div>
 
+<div className="p-2 text-center flex items-center">
+  <span className="mr-2 text-sm text-gray-600 flex items-center ">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+      <path stroke-linecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+  {username}
+</span>
+  <button className="text-sm bg-blue-200 py-1 px-2 text-gray-500 border rounded-sm" onClick={logOut}>Log out</button>
   
+  </div>
 </div>
 
 
